@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# generate model types from prisma
+generated
+
 # vercel
 .vercel
 

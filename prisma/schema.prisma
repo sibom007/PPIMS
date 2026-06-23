@@ -12,10 +12,37 @@ datasource db {
   provider = "postgresql"
 }
 
-model sb {
-  id    Int    @id
-  hello String
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+  SUPER_ADMIN
 }
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum NoticeType {
+  GENERAL
+  EXAM
+  RESULT
+  ADMISSION
+}
+
+enum ResultStatus {
+  PASS
+  FAIL
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 
 model User {
   id            String    @id
@@ -23,6 +50,13 @@ model User {
   email         String
   emailVerified Boolean   @default(false)
   image         String?
+ role          Role      @default(STUDENT)
+
+  student       Student?
+  teacher       Teacher?
+
+
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -78,4 +112,174 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Department {
+  id        String @id @default(cuid())
+
+  name      String
+  code      String @unique
+
+  students  Student[]
+  teachers  Teacher[]
+  subjects  Subject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id            String @id @default(cuid())
+
+  userId        String @unique
+  user          User   @relation(fields: [userId], references: [id])
+
+  roll          String @unique
+  registration  String @unique
+
+  phone         String?
+  gender        Gender?
+
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+
+  results       Result[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Teacher {
+  id            String @id @default(cuid())
+
+  userId        String @unique
+  user          User @relation(fields: [userId], references: [id])
+
+  designation   String
+
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Semester {
+  id          String @id @default(cuid())
+
+  name        String
+
+  subjects    Subject[]
+  exams       Exam[]
+
+  createdAt   DateTime @default(now())
+
+  routines Routine[]
+}
+
+model Subject {
+  id            String @id @default(cuid())
+
+  code          String @unique
+  name          String
+  credits       Int
+
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+
+  semesterId    String
+  semester      Semester @relation(fields: [semesterId], references: [id])
+
+  results       Result[]
+
+  createdAt     DateTime @default(now())
+}
+
+model Notice {
+  id          String @id @default(cuid())
+
+  title       String
+  content     String
+
+  type        NoticeType
+
+  attachment  String?
+
+  publishedAt DateTime @default(now())
+}
+
+
+model Routine {
+  id            String @id @default(cuid())
+
+  title         String
+
+  semesterId    String
+  semester      Semester @relation(fields: [semesterId], references: [id])
+
+  pdfUrl        String
+
+  createdAt     DateTime @default(now())
+}
+
+model Exam {
+  id            String @id @default(cuid())
+
+  title         String
+
+  semesterId    String
+  semester      Semester @relation(fields: [semesterId], references: [id])
+
+  examDate      DateTime
+
+  results       Result[]
+
+  createdAt     DateTime @default(now())
+}
+
+model Result {
+  id            String @id @default(cuid())
+
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id])
+
+  subjectId     String
+  subject       Subject @relation(fields: [subjectId], references: [id])
+
+  examId        String
+  exam          Exam @relation(fields: [examId], references: [id])
+
+  marks         Float
+
+  grade         String
+
+  status        ResultStatus
+
+  createdAt     DateTime @default(now())
+}
+
+model CertificateRequest {
+  id            String @id @default(cuid())
+
+  studentId     String
+
+  type          String
+
+  status        RequestStatus @default(PENDING)
+
+  createdAt     DateTime @default(now())
+}
+
+model RecheckRequest {
+  id            String @id @default(cuid())
+
+  studentId     String
+
+  resultId      String
+
+  reason        String?
+
+  status        RequestStatus @default(PENDING)
+
+  createdAt     DateTime @default(now())
 }

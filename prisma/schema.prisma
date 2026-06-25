@@ -5,7 +5,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -13,10 +13,29 @@ datasource db {
 }
 
 enum Role {
+  USER
   STUDENT
   TEACHER
   ADMIN
   SUPER_ADMIN
+}
+
+enum TeacherDesignation {
+  LECTURER
+  JUNIOR_INSTRUCTOR
+  INSTRUCTOR
+  SENIOR_INSTRUCTOR
+  CHIEF_INSTRUCTOR
+  HEAD_OF_DEPARTMENT
+  PRINCIPAL
+  VICE_PRINCIPAL
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  RETIRED
 }
 
 enum Gender {
@@ -43,24 +62,22 @@ enum RequestStatus {
   REJECTED
 }
 
-
 model User {
-  id            String    @id
+  id            String  @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean @default(false)
   image         String?
- role          Role      @default(STUDENT)
+  role          Role    @default(USER)
 
-  student       Student?
-  teacher       Teacher?
+  student            Student?
+  teacher            Teacher?
+  teacherApplication TeacherApplication?
 
-
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessions  Session[]
+  accounts  Account[]
 
   @@unique([email])
   @@map("user")
@@ -115,171 +132,219 @@ model Verification {
 }
 
 model Department {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
-  name      String
-  code      String @unique
+  name        String
+  code        String  @unique
+  description String?
+  image       String?
+  isActive    Boolean @default(true)
 
-  students  Student[]
-  teachers  Teacher[]
-  subjects  Subject[]
+  students            Student[]
+  teachers            Teacher[]
+  subjects            Subject[]
+  teacherApplications TeacherApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeacherApplication {
+  id String @id @default(cuid())
+
+  phone          String
+  qualification  String
+  specialization String?
+  designation    TeacherDesignation
+
+  status     RequestStatus @default(PENDING)
+  adminNotes String?
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudentApplication {
+  id String @id @default(cuid())
+
+  phone  String?
+  gender Gender?
+
+  roll         String @unique
+  registration String @unique
+
+  status     RequestStatus @default(PENDING)
+  adminNotes String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Student {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId        String @unique
-  user          User   @relation(fields: [userId], references: [id])
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 
-  roll          String @unique
-  registration  String @unique
+  roll         String @unique
+  registration String @unique
 
-  phone         String?
-  gender        Gender?
+  phone  String?
+  gender Gender?
 
-  departmentId  String
-  department    Department @relation(fields: [departmentId], references: [id])
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
 
-  results       Result[]
+  results Result[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Teacher {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId        String @unique
-  user          User @relation(fields: [userId], references: [id])
+  phone            String
+  employeeId       String             @unique
+  designation      TeacherDesignation
+  qualification    String
+  specialization   String?
+  joiningDate      DateTime
+  employmentStatus EmploymentStatus   @default(ACTIVE)
+  userId           String             @unique
+  user             User               @relation(fields: [userId], references: [id])
 
-  designation   String
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
 
-  departmentId  String
-  department    Department @relation(fields: [departmentId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  @@index([departmentId])
+  @@index([employeeId])
 }
 
 model Semester {
-  id          String @id @default(cuid())
+  id String @id @default(cuid())
 
-  name        String
+  name String
 
-  subjects    Subject[]
-  exams       Exam[]
+  subjects Subject[]
+  exams    Exam[]
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   routines Routine[]
 }
 
 model Subject {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  code          String @unique
-  name          String
-  credits       Int
+  code    String @unique
+  name    String
+  credits Int
 
-  departmentId  String
-  department    Department @relation(fields: [departmentId], references: [id])
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
 
-  semesterId    String
-  semester      Semester @relation(fields: [semesterId], references: [id])
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
 
-  results       Result[]
+  results Result[]
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Notice {
-  id          String @id @default(cuid())
+  id String @id @default(cuid())
 
-  title       String
-  content     String
+  title   String
+  content String
 
-  type        NoticeType
+  type NoticeType
 
-  attachment  String?
+  attachment String?
 
   publishedAt DateTime @default(now())
 }
 
-
 model Routine {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  title         String
+  title String
 
-  semesterId    String
-  semester      Semester @relation(fields: [semesterId], references: [id])
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
 
-  pdfUrl        String
+  pdfUrl String
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Exam {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  title         String
+  title String
 
-  semesterId    String
-  semester      Semester @relation(fields: [semesterId], references: [id])
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
 
-  examDate      DateTime
+  examDate DateTime
 
-  results       Result[]
+  results Result[]
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Result {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  studentId     String
-  student       Student @relation(fields: [studentId], references: [id])
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
 
-  subjectId     String
-  subject       Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
 
-  examId        String
-  exam          Exam @relation(fields: [examId], references: [id])
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id])
 
-  marks         Float
+  marks Float
 
-  grade         String
+  grade String
 
-  status        ResultStatus
+  status ResultStatus
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model CertificateRequest {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  studentId     String
+  studentId String
 
-  type          String
+  type String
 
-  status        RequestStatus @default(PENDING)
+  status RequestStatus @default(PENDING)
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model RecheckRequest {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  studentId     String
+  studentId String
 
-  resultId      String
+  resultId String
 
-  reason        String?
+  reason String?
 
-  status        RequestStatus @default(PENDING)
+  status RequestStatus @default(PENDING)
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }

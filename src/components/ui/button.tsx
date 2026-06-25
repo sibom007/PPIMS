@@ -1,6 +1,6 @@
 import * as React from "react";
 import Image from "next/image";
-import { Slot } from "radix-ui";
+import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -57,7 +57,7 @@ function Button({
     icon?: React.ReactNode;
     iconPosition?: "left" | "right";
   }) {
-  const Comp = asChild ? Slot.Root : "button";
+  const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
@@ -69,21 +69,16 @@ function Button({
       {...props}
     >
       {isLoading ? (
-        <>
-          <Image
-            src="/loading.svg"
-            alt="Loading"
-            width={30}
-            height={30}
-          />
+        <div className="flex gap-1 items-center">
+          <Image src="/loading.svg" alt="Loading" width={30} height={30} />
           {children}
-        </>
+        </div>
       ) : (
-        <>
+        <div className="flex gap-1 items-center">
           {icon && iconPosition === "left" && icon}
           {children}
           {icon && iconPosition === "right" && icon}
-        </>
+        </div>
       )}
     </Comp>
   );

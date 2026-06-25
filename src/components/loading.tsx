@@ -10,7 +10,7 @@ export function Loading({
   desc,
 }: LoadingProps) {
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center backdrop-blur-sm">
+    <div className="flex items-center justify-center backdrop-blur-sm h-150">
       <div className="flex flex-col items-center gap-3 rounded-xl bg-background p-20 shadow-lg">
         <Image
           src="/loading.svg"

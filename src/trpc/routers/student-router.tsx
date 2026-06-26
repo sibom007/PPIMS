@@ -1,22 +1,26 @@
-import { db } from "@/lib/prisma";
-import { adminProcedure, createTRPCRouter, protectedProcedure } from "../init";
-import {
-  CreateApplicationSchema,
-  UpdateApplicationStatusSchema,
-} from "../types/teacher-types";
-import { TRPCError } from "@trpc/server";
 import z from "zod";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  teacherProcedure,
+} from "../init";
+import {
+  CreateStudentApplicationSchema,
+  UpdateStudentApplicationStatusSchema,
+} from "../types/student-types";
+import { db } from "@/lib/prisma";
+import { TRPCError } from "@trpc/server";
 import { RequestStatus } from "@/generated/prisma/enums";
 
-export const teacherRouter = createTRPCRouter({
-  getTeacherApplications: adminProcedure
+export const studentRouter = createTRPCRouter({
+  getStudentApplications: teacherProcedure
     .input(
       z.object({
         status: z.nativeEnum(RequestStatus).optional(),
       }),
     )
     .query(async ({ input }) => {
-      return await db.teacherApplication.findMany({
+      return await db.studentApplication.findMany({
         where: {
           status: input.status,
         },
@@ -36,8 +40,9 @@ export const teacherRouter = createTRPCRouter({
         },
       });
     }),
+
   getApplication: protectedProcedure.query(async ({ ctx }) => {
-    const application = await db.teacherApplication.findUnique({
+    const application = await db.studentApplication.findUnique({
       where: {
         userId: ctx.user.id,
       },
@@ -45,7 +50,6 @@ export const teacherRouter = createTRPCRouter({
         department: {
           select: {
             name: true,
-            code: true,
             description: true,
           },
         },
@@ -55,23 +59,23 @@ export const teacherRouter = createTRPCRouter({
     return application;
   }),
 
-  applyForTeacher: protectedProcedure
-    .input(CreateApplicationSchema)
+  applyForStudent: protectedProcedure
+    .input(CreateStudentApplicationSchema)
     .mutation(async ({ ctx, input }) => {
-      // Check if user already applied
-      const existingApplication = await db.teacherApplication.findUnique({
+      // Check if user already applied for a student profile
+      const existingApplication = await db.studentApplication.findUnique({
         where: { userId: ctx.user.id },
       });
 
       if (existingApplication) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "You have already submitted a teacher application.",
+          message: "You have already submitted a student application.",
         });
       }
 
-      // Create application linked to logged in user
-      return await db.teacherApplication.create({
+      // Create student application linked to logged in user
+      return await db.studentApplication.create({
         data: {
           userId: ctx.user.id,
           ...input,
@@ -79,11 +83,11 @@ export const teacherRouter = createTRPCRouter({
       });
     }),
 
-  reviewApplication: adminProcedure
-    .input(UpdateApplicationStatusSchema)
+  reviewApplication: teacherProcedure
+    .input(UpdateStudentApplicationStatusSchema)
     .mutation(async ({ input }) => {
-      // Find the target application first
-      const application = await db.teacherApplication.findUnique({
+      // Find the target student application first
+      const application = await db.studentApplication.findUnique({
         where: { id: input.id },
       });
 
@@ -94,8 +98,9 @@ export const teacherRouter = createTRPCRouter({
         });
       }
 
+      // Handle Rejection
       if (input.status === "REJECTED") {
-        return await db.teacherApplication.update({
+        return await db.studentApplication.update({
           where: { id: input.id },
           data: {
             status: "REJECTED",
@@ -104,25 +109,22 @@ export const teacherRouter = createTRPCRouter({
         });
       }
 
-      const existingTeacher = await db.teacher.findUnique({
+      // Handle Approval - Verify student profile doesn't exist yet
+      const existingStudent = await db.student.findUnique({
         where: { userId: application.userId },
       });
 
-      if (existingTeacher) {
+      if (existingStudent) {
         throw new TRPCError({
           code: "CONFLICT",
           message:
-            "This applicant already has an active Teacher profile in the system.",
+            "This applicant already has an active Student profile in the system.",
         });
       }
 
-      // Generating clean custom institutional employee structure instead of standard raw UUID
-      const teacherCount = await db.teacher.count();
-      const generatedEmployeeId = `EMP-${new Date().getFullYear()}-${String(teacherCount + 1).padStart(4, "0")}`;
-
-      // Execute all atomic database writes together safely
-      const [updatedApp, updatedUser, createdTeacher] = await db.$transaction([
-        db.teacherApplication.update({
+      // Execute all atomic database writes together safely inside a transaction
+      const [updatedApp, updatedUser, createdStudent] = await db.$transaction([
+        db.studentApplication.update({
           where: { id: input.id },
           data: {
             status: "APPROVED",
@@ -132,33 +134,30 @@ export const teacherRouter = createTRPCRouter({
 
         db.user.update({
           where: { id: application.userId },
-          data: { role: "TEACHER" },
+          data: { role: "STUDENT" },
         }),
 
-        db.teacher.create({
+        db.student.create({
           data: {
             userId: application.userId,
             departmentId: application.departmentId,
+            roll: application.roll,
+            registration: application.registration,
             phone: application.phone,
-            qualification: application.qualification,
-            specialization: application.specialization,
-            designation: application.designation,
-            employeeId: generatedEmployeeId,
-            joiningDate: new Date(),
-            employmentStatus: "ACTIVE",
+            gender: application.gender,
           },
         }),
       ]);
 
       return {
         success: true,
-        teacherId: createdTeacher.id,
-        employeeId: generatedEmployeeId,
+        studentId: createdStudent.id,
       };
     }),
+
   retryApplication: protectedProcedure.mutation(async ({ ctx }) => {
     // 1. Fetch the user's existing application
-    const existingApplication = await db.teacherApplication.findUnique({
+    const existingApplication = await db.studentApplication.findUnique({
       where: { userId: ctx.user.id },
     });
 
@@ -179,7 +178,7 @@ export const teacherRouter = createTRPCRouter({
     }
 
     // 4. Delete the application cleanly from the database
-    await db.teacherApplication.delete({
+    await db.studentApplication.delete({
       where: { userId: ctx.user.id },
     });
 

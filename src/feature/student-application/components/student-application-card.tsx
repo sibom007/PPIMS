@@ -5,29 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Building2,
   Phone,
-  GraduationCap,
-  Award,
-  Briefcase,
-  FileText,
   Calendar,
+  FileText,
+  IdCard,
+  Fingerprint,
+  User2,
 } from "lucide-react";
-import { ApplicationProps } from "../types";
+import { RequestStatus } from "@/generated/prisma/enums";
+import { TStudentApplication } from "../types";
 import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type Props = {
-  application: ApplicationProps;
+  application: TStudentApplication;
 };
 
-export const TeacherApplicationCard = ({ application }: Props) => {
+export const StudentApplicationCard = ({ application }: Props) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const retryApplication = useMutation(
-    trpc.teacher.retryApplication.mutationOptions({
+    trpc.student.retryApplication.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(
-          trpc.teacher.getApplication.queryFilter(),
+          trpc.student.getApplication.queryFilter(),
         );
       },
     }),
@@ -41,7 +42,7 @@ export const TeacherApplicationCard = ({ application }: Props) => {
     },
   );
 
-  const statusStyles: Record<string, string> = {
+  const statusStyles: Record<RequestStatus, string> = {
     PENDING:
       "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/10",
     APPROVED:
@@ -51,15 +52,14 @@ export const TeacherApplicationCard = ({ application }: Props) => {
   };
 
   const currentStatusStyle =
-    statusStyles[application.status.toUpperCase()] ||
-    "bg-muted text-muted-foreground";
+    statusStyles[application.status] || "bg-muted text-muted-foreground";
 
   return (
-    <Card className="max-w-7xl  border-muted/60 shadow-md transition-all hover:shadow-lg">
+    <Card className="max-w-7xl border-muted/60 shadow-md transition-all hover:shadow-lg">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-muted/40 pb-6">
         <div className="space-y-1">
           <CardTitle className="text-xl font-bold tracking-tight text-foreground">
-            Teacher Application
+            Student Application
           </CardTitle>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Calendar className="h-3.5 w-3.5" />
@@ -76,9 +76,7 @@ export const TeacherApplicationCard = ({ application }: Props) => {
       </CardHeader>
 
       <CardContent className="pt-6 space-y-6">
-        {/* ========================================================= */}
-        {/* 🏢 NEW: ENHANCED DEPARTMENT INFO SECTION                 */}
-        {/* ========================================================= */}
+        {/* Department Banner Block */}
         <div className="rounded-xl border border-muted bg-muted/20 p-4 space-y-2">
           <div className="flex items-center gap-2 text-primary">
             <Building2 className="h-5 w-5" />
@@ -102,8 +100,39 @@ export const TeacherApplicationCard = ({ application }: Props) => {
           </div>
         </div>
 
-        {/* Professional Details Grid */}
+        {/* Academic & Personal Details Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 pt-2">
+          {/* Roll Number */}
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
+              <IdCard className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Roll Number
+              </p>
+              <p className="font-semibold text-foreground tracking-wide">
+                {application.roll}
+              </p>
+            </div>
+          </div>
+
+          {/* Registration Number */}
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
+              <Fingerprint className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Registration No.
+              </p>
+              <p className="font-semibold text-foreground tracking-wide">
+                {application.registration}
+              </p>
+            </div>
+          </div>
+
+          {/* Phone Contact */}
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
               <Phone className="h-4 w-4" />
@@ -116,61 +145,34 @@ export const TeacherApplicationCard = ({ application }: Props) => {
             </div>
           </div>
 
+          {/* Gender Profile */}
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
-              <GraduationCap className="h-4 w-4" />
+              <User2 className="h-4 w-4" />
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Highest Qualification
+                Gender Identification
               </p>
-              <p className="font-medium text-foreground">
-                {application.qualification}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
-              <Award className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Specialization Area
-              </p>
-              <p className="font-medium text-foreground">
-                {application.specialization || "General / Not Specified"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
-              <Briefcase className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Requested Designation
-              </p>
-              <p className="font-semibold text-primary">
-                {application.designation.replace(/_/g, " ")}
+              <p className="font-medium text-foreground capitalize">
+                {application.gender.toLowerCase()}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Reviewer Notes Block */}
+        {/* Reviewer Response Notes Section */}
         {application.adminNotes && (
           <div
             className={`rounded-xl border p-4 flex gap-3 ${
-              application.status.toUpperCase() === "REJECTED"
+              application.status === "REJECTED"
                 ? "bg-destructive/5 border-destructive/10"
                 : "bg-muted/40 border-muted/60"
             }`}
           >
             <FileText
               className={`h-5 w-5 mt-0.5 shrink-0 ${
-                application.status.toUpperCase() === "REJECTED"
+                application.status === "REJECTED"
                   ? "text-destructive"
                   : "text-muted-foreground"
               }`}
@@ -184,13 +186,14 @@ export const TeacherApplicationCard = ({ application }: Props) => {
                   {application.adminNotes}
                 </p>
               </div>
+
               <Button
                 onClick={() => retryApplication.mutate()}
                 disabled={retryApplication.isPending}
                 isLoading={retryApplication.isPending}
                 variant={"outline"}
               >
-                Retry if any Problem
+                Retry if any problem
               </Button>
             </div>
           </div>

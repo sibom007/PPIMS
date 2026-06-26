@@ -1,11 +1,10 @@
-import { RequestStatus, TeacherDesignation } from "@/generated/prisma/enums";
+import {
+  Gender,
+  RequestStatus,
+  TeacherDesignation,
+} from "@/generated/prisma/enums";
 import { z } from "zod";
-// Import your Prisma enums if you want exact matching,
-// or define them directly in Zod as native enums:
 
-// ==========================================
-// 🆕 CREATE SCHEMA (User Submission)
-// ==========================================
 export const CreateApplicationSchema = z.object({
   departmentId: z
     .string("Department ID is required")
@@ -21,15 +20,13 @@ export const CreateApplicationSchema = z.object({
     .min(3, "Qualification must be at least 3 characters long"),
 
   specialization: z.string().optional().nullable(),
+  gender: z.nativeEnum(Gender),
 
   designation: z.nativeEnum(TeacherDesignation, {
     error: "Invalid teacher designation value",
   }),
 });
 
-// ==========================================
-// 🔄 UPDATE SCHEMA (Admin Action)
-// ==========================================
 export const UpdateApplicationStatusSchema = z.object({
   id: z.string().cuid("Invalid application ID"),
 
@@ -43,9 +40,6 @@ export const UpdateApplicationStatusSchema = z.object({
     .max(500, "Notes cannot exceed 500 characters"),
 });
 
-// ==========================================
-// ❌ DELETE SCHEMA (Id Check)
-// ==========================================
 export const DeleteApplicationSchema = z.object({
   params: z.object({
     id: z.string().cuid("Invalid application ID"),

@@ -74,10 +74,11 @@ model User {
   teacher            Teacher?
   teacherApplication TeacherApplication?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  sessions  Session[]
-  accounts  Account[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  sessions            Session[]
+  accounts            Account[]
+  studentApplications StudentApplication[]
 
   @@unique([email])
   @@map("user")
@@ -147,6 +148,8 @@ model Department {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  studentApplications StudentApplication[]
 }
 
 model TeacherApplication {
@@ -156,6 +159,7 @@ model TeacherApplication {
   qualification  String
   specialization String?
   designation    TeacherDesignation
+  gender         Gender
 
   status     RequestStatus @default(PENDING)
   adminNotes String?
@@ -173,14 +177,20 @@ model TeacherApplication {
 model StudentApplication {
   id String @id @default(cuid())
 
-  phone  String?
-  gender Gender?
+  phone  String
+  gender Gender
 
   roll         String @unique
   registration String @unique
 
   status     RequestStatus @default(PENDING)
   adminNotes String?
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -195,8 +205,8 @@ model Student {
   roll         String @unique
   registration String @unique
 
-  phone  String?
-  gender Gender?
+  phone  String
+  gender Gender
 
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id])
@@ -212,6 +222,7 @@ model Teacher {
 
   phone            String
   employeeId       String             @unique
+  gender           String?
   designation      TeacherDesignation
   qualification    String
   specialization   String?

@@ -46,8 +46,18 @@ export const sidebarData: SidebarConfig = {
           url: "/dashboard/departments",
         },
         {
-          title: "Teacher-applations",
+          title: "teachers-applications",
+          url: "/dashboard/admin/manage-teacher-applications",
+          roles:["ADMIN","SUPER_ADMIN"]
+        },
+        {
+          title: "Teacher-application",
           url: "/dashboard/teacher-application",
+          roles: ["USER"],
+        },
+        {
+          title: "Student-application",
+          url: "/dashboard/student-application",
           roles: ["USER"],
         },
       ],
@@ -56,8 +66,19 @@ export const sidebarData: SidebarConfig = {
       title: "Admins",
       url: "#",
       icon: SquareTerminal,
+      roles: ["ADMIN", "SUPER_ADMIN"],
+      items: [],
+    },
+    {
+      title: "teachers",
+      url: "#",
+      icon: SquareTerminal,
+      roles: ["TEACHER"],
       items: [
-        { title: "Manage-teachers", url: "/dashboard/admin/manage-teachers" },
+        {
+          title: "students-applications",
+          url: "/dashboard/admin/manage-students-applications",
+        },
       ],
     },
     {

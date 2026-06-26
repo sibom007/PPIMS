@@ -7,5 +7,9 @@ type GetDepartmentsOutput = inferProcedureOutput<
 type GetApplicationOutput = inferProcedureOutput<
   AppRouter["teacher"]["getApplication"]
 >;
+type GetTeacherApplicationsOutput = inferProcedureOutput<
+  AppRouter["teacher"]["getTeacherApplications"]
+>;
 export type DepartmentForSelect = GetDepartmentsOutput;
 export type ApplicationProps = NonNullable<GetApplicationOutput>;
+export type TTeacherApplicationsOutput = GetTeacherApplicationsOutput[number];

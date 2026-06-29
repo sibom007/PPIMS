@@ -1,11 +1,16 @@
 import { createTRPCRouter } from "../init";
-import { departmentRouter } from "./department-router";
-import { studentRouter } from "./student-router";
 import { teacherRouter } from "./teacher-router";
+import { studentRouter } from "./student-router";
+
+import { academicRouter } from "./academic-router";
+import { departmentRouter } from "./department-router";
+import { semesterRouter } from "./semester-router";
 
 export const appRouter = createTRPCRouter({
+  student: studentRouter,
   teacher: teacherRouter,
-  student:studentRouter,
+  semester: semesterRouter,
+  academic: academicRouter,
   department: departmentRouter,
 });
 

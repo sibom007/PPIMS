@@ -57,7 +57,7 @@ export const AdminReviewList = () => {
           <div className="flex items-center gap-2 text-primary">
             <Users className="h-5 w-5" />
             <CardTitle className="text-xl font-bold tracking-tight text-foreground">
-              Manage Role Requests
+              Manage Teacher Application
             </CardTitle>
           </div>
           <CardDescription>

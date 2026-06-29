@@ -14,20 +14,21 @@ import Image from "next/image";
 import { DepartmentWithCounts } from "../types";
 import { DeleteConfirmation } from "@/components/delete-confirmation";
 import { EditDepartment } from "./edit-department";
-import { authClient } from "@/lib/auth-client";
+import { currentUser } from "@/lib/auth";
 
 interface CardProps {
   department: DepartmentWithCounts;
   onViewDetails: (dept: DepartmentWithCounts) => void;
   onDelete: (id: string) => void;
+  CurrentUser: currentUser;
 }
 
 export const DepartmentCard: React.FC<CardProps> = ({
   department,
   onViewDetails,
   onDelete,
+  CurrentUser,
 }) => {
-  const { data: session } = authClient.useSession();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -79,8 +80,8 @@ export const DepartmentCard: React.FC<CardProps> = ({
         >
           <span className="">View</span>
         </Button>
-        {(session?.user.role === "ADMIN" ||
-          session?.user.role === "SUPER_ADMIN") && (
+        {(CurrentUser?.role === "ADMIN" ||
+          CurrentUser?.role === "SUPER_ADMIN") && (
           <>
             <Button
               variant="secondary"

@@ -1,4 +1,4 @@
-import { DepartmentCardList } from "@/feature/department/components/department-card-list";
+import {  DepartmentList } from "@/feature/department/components/department-list";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
@@ -12,7 +12,7 @@ function Page() {
       <ErrorBoundary fallback={<Error />}>
         <Suspense fallback={<Loading />}>
           <main className="p-6 space-y-6 w-full max-w-none mx-auto">
-            <DepartmentCardList />
+            <DepartmentList />
           </main>
         </Suspense>
       </ErrorBoundary>

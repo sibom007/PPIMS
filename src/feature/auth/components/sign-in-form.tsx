@@ -29,23 +29,26 @@ export function SignInForm() {
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
-      password: "",
+      password: "sibom1234",
     },
   });
 
   const onSubmit = async (data: SignInFormValues) => {
     try {
-      const res = await authClient.signIn.email({
+      const { data: res, error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
       });
-      if (res.data?.user.id) {
+      if (res?.user.id) {
         toast.success("user login successfull");
         reset();
         router.replace("/");
       }
+      if (error) {
+        toast.error(error.message);
+      }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -94,8 +97,6 @@ export function SignInForm() {
                   <h1 className="text-3xl font-bold tracking-tight">
                     start the platform
                   </h1>
-
-                  
                 </motion.div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -110,7 +111,6 @@ export function SignInForm() {
                             {...field}
                             type="email"
                             placeholder="john@example.com"
-                            
                           />
                         </FieldContent>
                         <FieldError>{errors.email?.message}</FieldError>
@@ -129,7 +129,6 @@ export function SignInForm() {
                             {...field}
                             type="password"
                             placeholder="••••••••"
-                            
                           />
                         </FieldContent>
                         <FieldError>{errors.password?.message}</FieldError>
@@ -159,9 +158,9 @@ export function SignInForm() {
                 <div className="mt-6 text-center text-sm text-muted-foreground">
                   do not have an account?{" "}
                   <Link href={"/sign-up"}>
-                  <span className="cursor-pointer font-medium text-foreground hover:underline">
-                    Sign-up
-                  </span>
+                    <span className="cursor-pointer font-medium text-foreground hover:underline">
+                      Sign-up
+                    </span>
                   </Link>
                 </div>
               </div>

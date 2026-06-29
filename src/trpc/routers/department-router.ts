@@ -69,9 +69,11 @@ export const departmentRouter = createTRPCRouter({
       });
     }
 
-    return await db.department.create({
+    const res= await db.department.create({
       data: input,
     });
+
+    return { message: "Department Create successfully ", data: res, code: 201 };
   }),
 
   update: adminProcedure

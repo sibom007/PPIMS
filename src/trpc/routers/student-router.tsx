@@ -19,10 +19,27 @@ export const studentRouter = createTRPCRouter({
         status: z.nativeEnum(RequestStatus).optional(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
+      const teacher = await db.teacher.findUnique({
+        where: {
+          userId: ctx.user.id,
+        },
+        select: {
+          departmentId: true,
+        },
+      });
+
+      if (!teacher) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Teacher not found.",
+        });
+      }
+
       return await db.studentApplication.findMany({
         where: {
           status: input.status,
+          departmentId: teacher.departmentId,
         },
         include: {
           user: {
@@ -85,16 +102,32 @@ export const studentRouter = createTRPCRouter({
 
   reviewApplication: teacherProcedure
     .input(UpdateStudentApplicationStatusSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       // Find the target student application first
       const application = await db.studentApplication.findUnique({
         where: { id: input.id },
+      });
+
+      const teacher = await db.teacher.findUnique({
+        where: {
+          userId: ctx.user.id,
+        },
+        select: {
+          departmentId: true,
+        },
       });
 
       if (!application) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Application not found.",
+        });
+      }
+
+      if (!teacher || teacher.departmentId !== application.departmentId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot review applications from another department.",
         });
       }
 

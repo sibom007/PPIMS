@@ -7,6 +7,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { RequestStatus } from "@/generated/prisma/enums";
+import { v4 as uuid } from "uuid";
 
 export const teacherRouter = createTRPCRouter({
   getTeacherApplications: adminProcedure
@@ -36,6 +37,7 @@ export const teacherRouter = createTRPCRouter({
         },
       });
     }),
+
   getApplication: protectedProcedure.query(async ({ ctx }) => {
     const application = await db.teacherApplication.findUnique({
       where: {
@@ -116,9 +118,7 @@ export const teacherRouter = createTRPCRouter({
         });
       }
 
-      // Generating clean custom institutional employee structure instead of standard raw UUID
-      const teacherCount = await db.teacher.count();
-      const generatedEmployeeId = `EMP-${new Date().getFullYear()}-${String(teacherCount + 1).padStart(4, "0")}`;
+      const generatedEmployeeId = `EMP-${new Date().getFullYear()}-${uuid().slice(0, 8).toUpperCase()}`;
 
       // Execute all atomic database writes together safely
       const [updatedApp, updatedUser, createdTeacher] = await db.$transaction([
@@ -143,6 +143,7 @@ export const teacherRouter = createTRPCRouter({
             qualification: application.qualification,
             specialization: application.specialization,
             designation: application.designation,
+            gender: application.gender,
             employeeId: generatedEmployeeId,
             joiningDate: new Date(),
             employmentStatus: "ACTIVE",
@@ -156,6 +157,7 @@ export const teacherRouter = createTRPCRouter({
         employeeId: generatedEmployeeId,
       };
     }),
+
   retryApplication: protectedProcedure.mutation(async ({ ctx }) => {
     // 1. Fetch the user's existing application
     const existingApplication = await db.teacherApplication.findUnique({

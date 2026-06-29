@@ -48,7 +48,7 @@ export const sidebarData: SidebarConfig = {
         {
           title: "teachers-applications",
           url: "/dashboard/admin/manage-teacher-applications",
-          roles:["ADMIN","SUPER_ADMIN"]
+          roles: ["ADMIN", "SUPER_ADMIN"],
         },
         {
           title: "Teacher-application",
@@ -77,7 +77,7 @@ export const sidebarData: SidebarConfig = {
       items: [
         {
           title: "students-applications",
-          url: "/dashboard/admin/manage-students-applications",
+          url: "/dashboard/teacher/manage-students-applications",
         },
       ],
     },

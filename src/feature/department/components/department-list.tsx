@@ -12,10 +12,12 @@ import {
 } from "@tanstack/react-query";
 import { Empty } from "@/components/empty";
 import { DepartmentWithCounts } from "../types";
+import { authClient } from "@/lib/auth-client";
 
-export const DepartmentCardList: React.FC = () => {
+export const DepartmentList: React.FC = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { data: session } = authClient.useSession();
   const { data } = useSuspenseQuery(trpc.department.getAll.queryOptions());
   const deleteDepartment = useMutation(
     trpc.department.delete.mutationOptions({
@@ -46,9 +48,9 @@ export const DepartmentCardList: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4  sm:py-2 ">
+    <div>
       {/* Top Section: Header Info on Left, Action Button on Right */}
-      <DepartmentHeader />
+      <DepartmentHeader CurrentUser={session?.user} />
       <Separator />
 
       {!data.length && <Empty />}
@@ -58,6 +60,7 @@ export const DepartmentCardList: React.FC = () => {
           <DepartmentCard
             key={dept.id}
             department={dept}
+            CurrentUser={session?.user}
             onViewDetails={handleOpenDetails}
             onDelete={handleDeleteSubmit}
           />

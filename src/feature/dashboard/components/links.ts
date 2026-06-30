@@ -3,7 +3,6 @@ import { Role } from "@/generated/prisma/enums";
 import {
   SquareTerminal,
   Bot,
-  BookOpen,
   Settings2,
   LifeBuoy,
   Send,
@@ -51,6 +50,11 @@ export const sidebarData: SidebarConfig = {
           roles: ["ADMIN", "SUPER_ADMIN"],
         },
         {
+          title: "semester-list",
+          url: "/dashboard/admin/semester-list",
+          roles: ["ADMIN", "SUPER_ADMIN"],
+        },
+        {
           title: "Teacher-application",
           url: "/dashboard/teacher-application",
           roles: ["USER"],
@@ -92,17 +96,7 @@ export const sidebarData: SidebarConfig = {
         { title: "Quantum", url: "#" },
       ],
     },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        { title: "Introduction", url: "#" },
-        { title: "Get Started", url: "#" },
-        { title: "Tutorials", url: "#" },
-        { title: "Changelog", url: "#" },
-      ],
-    },
+
     {
       title: "Settings",
       url: "#",

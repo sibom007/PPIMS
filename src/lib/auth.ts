@@ -22,15 +22,15 @@ export const auth = betterAuth({
   },
 });
 
-export type currentUser =
-  | {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      email: string;
-      emailVerified: boolean;
-      name: string;
-      image?: string | null;
-      role: string;
-    }
-  | undefined;
+export interface CurrentUser {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+  image?: string | null | undefined;
+  role: string;
+}
+
+export type CurrentUserType = CurrentUser | null;

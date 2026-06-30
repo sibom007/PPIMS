@@ -10,7 +10,6 @@ export const semesterRouter = createTRPCRouter({
       select: {
         id: true,
         name: true,
-        number: true,
       },
     });
   }),

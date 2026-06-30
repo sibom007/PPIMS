@@ -31,3 +31,10 @@ export const UpdateAcademicSessionStatusSchema = z.object({
 
   status: z.nativeEnum(AcademicSessionStatus),
 });
+
+export type CreateAcademicSessionInput = z.infer<
+  typeof CreateAcademicSessionSchema
+>;
+export type UpdateAcademicSessionInput = z.infer<
+  typeof UpdateAcademicSessionSchema
+>;
